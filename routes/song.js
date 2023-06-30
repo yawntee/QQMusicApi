@@ -136,6 +136,7 @@ const song = {
           errMsg: '获取链接出错，建议检查是否携带 cookie ',
         });
       }
+      console.log(JSON.stringify(result))
       if (result.req_0 && result.req_0.data && result.req_0.data.midurlinfo) {
         purl = result.req_0.data.midurlinfo[0].purl;
       }
@@ -189,14 +190,18 @@ const song = {
     const reqFun = async () => {
       count += 1;
       result = await request(url);
-      if (result.req_0.data.testfile2g) {
+      if (result.req_0.data.midurlinfo[0].purl!=="") {
         isOk = true;
       }
     };
 
     while (!isOk && count < 5) {
       await reqFun().catch(() => (count += 1));
+      console.log(count)
+      console.log("result="+JSON.stringify(result))
     }
+
+    console.log("result="+JSON.stringify(result))
 
     if (!result || !result.req_0) {
       return res.send({
@@ -217,6 +222,8 @@ const song = {
         data[item.songmid] = `${domain}${item.purl}`;
       }
     });
+
+    console.log("data="+JSON.stringify(data))
 
     cacheData = {
       data,

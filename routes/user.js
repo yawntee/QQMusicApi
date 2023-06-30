@@ -33,11 +33,16 @@ const user = {
       },
     };
     const sign = getSign(data);
+    console.log("sign="+sign)
     let url = `https://u6.y.qq.com/cgi-bin/musics.fcg?sign=${sign}&format=json&inCharset=utf8&outCharset=utf-8&data=${encodeURIComponent(
       JSON.stringify(data)
     )}`;
 
+    console.log("url="+url)
+
     const result = await request({url})
+
+    console.log("result="+JSON.stringify(result))
 
     if (result.req1 && result.req1.data && result.req1.data.musickey) {
       const musicKey = result.req1.data.musickey;
