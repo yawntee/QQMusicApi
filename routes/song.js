@@ -1,4 +1,5 @@
 const search = require('./search');
+const getSign = require('../util/sign');
 
 const song = {
   '/': async ({req, res, request}) => {
@@ -88,9 +89,9 @@ const song = {
     let count = 0;
     let cacheKey = `song_url_${file}`;
     let cacheData = cache.get(cacheKey);
-    if (cacheData) {
-      return res.send(cacheData);
-    }
+    // if (cacheData) {
+    //   return res.send(cacheData);
+    // }
     let domain = '';
     while (!purl && count < 10) {
       count += 1;
@@ -162,7 +163,7 @@ const song = {
       result: 100,
     };
     res.send(cacheData);
-    cache.set(cacheKey, cacheData);
+    // cache.set(cacheKey, cacheData);
   },
 
   '/urls': async ({req, res, request, globalCookie, cache}) => {
@@ -231,6 +232,81 @@ const song = {
     };
     res.send(cacheData);
     cache.set(cacheKey, cacheData);
+  },
+
+  '/getPlayTopData': async ({req, res, request, globalCookie, cache}) => {
+    const obj = {...req.query, ...req.body}
+    const {id = ''} = obj
+
+    let {uin, qqmusic_key} = globalCookie.userCookie();
+    console.log("cookies="+JSON.stringify(globalCookie.userCookie()))
+    // if (!uin || !(qm_keyst || qqmusic_key)) {
+    //   return res.send({
+    //     result: 301,
+    //     errMsg: '未登陆'
+    //   })
+    // }
+    const data = {
+      req1: {
+        module: "QQConnectLogin.LoginServer",
+        method: "QQLogin",
+        param: {
+          expired_in: 7776000, //不用管
+          // onlyNeedAccessToken: 0, //不用管
+          // forceRefreshToken: 0, //不用管
+          // access_token: "6B0C62126368CA1ACE16C932C679747E", //access_token
+          // refresh_token: "25BACF1650EE2592D06BCC19EEAD7AD6", //refresh_token
+          musicid: uin, //uin或者web_uin 微信没试过
+          // musickey: qm_keyst || qqmusic_key, //key
+          musickey: qqmusic_key //key
+        },
+      },
+    };
+    const sign = getSign(data)
+    console.log("sign="+sign)
+
+    const time=new Date().getTime()
+    console.log("time="+time)
+
+    const result = await request({
+      url: `https://u6.y.qq.com/cgi-bin/musicu.fcg?_webcgikey=GetPlayTopData_HasPlayTopData&_=${time}`,
+      data: {
+        comm: {
+          g_tk: 5381,
+          uin: '',
+          format: 'json',
+          inCharset: 'utf8',
+          outCharset: 'utf-8',
+          platform: 'h5',
+          needNewCode: 1,
+          cv: 202201,
+          ct: 23,
+          mesh_devops: ''
+        },
+        req_0: {
+          module: 'music.musicToplist.PlayToplist',
+          method: 'GetPlayTopData',
+          param: {
+            songMidList: [id],
+            requireSongInfo: 1
+          }
+        },
+        req_1: {
+          module: 'music.musicToplist.PlayToplist',
+          method: 'HasPlayTopData',
+          param: {
+            songMidList: [id]
+          }
+        }
+      }
+    })
+
+    console.log(result)
+
+    return res.send({
+      result: 100,
+      data: result
+    })
   },
 
   // 相似歌曲
