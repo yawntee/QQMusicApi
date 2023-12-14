@@ -101,14 +101,9 @@ const user = {
     jsonFile.writeFile('data/allCookies.json', allCookies);
 
     // 这里写死我的企鹅号，作为存在服务器上的cookie
-    if (String(userCookie.uin) === String(global.QQ)) {
-      globalCookie.updateUserCookie(userCookie);
-      jsonFile.writeFile('data/cookie.json', userCookie);
-    }
-    res.set('Access-Control-Allow-Origin', 'https://y.qq.com');
-    res.set('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
-    res.set('Access-Control-Allow-Headers', 'Content-Type');
-    res.set('Access-Control-Allow-Credentials', 'true');
+    globalCookie.updateUserCookie(userCookie);
+    jsonFile.writeFile('data/cookie.json', userCookie);
+
     res.send({
       result: 100,
       data: '操作成功',

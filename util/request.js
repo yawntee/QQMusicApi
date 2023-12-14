@@ -42,11 +42,10 @@ module.exports = (req, res, {globalCookie} = {}) => {
         delete obj.data;
       }
 
-      const cookieObj = (Number(req.query.ownCookie) ? req.cookies : userCookie) || {};
       obj.headers = obj.headers || {};
       obj.xsrfCookieName = 'XSRF-TOKEN';
       obj.withCredentials = true;
-      obj.headers.Cookie = Object.keys(cookieObj).map((k) => `${k}=${encodeURI(cookieObj[k])}`).join('; ');
+      obj.headers.Cookie = req.query.cookie;
 
       const response = await axios(obj);
 

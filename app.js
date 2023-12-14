@@ -26,6 +26,17 @@ config.useDataStatistics && setInterval(() => dataHandle.saveInfo(), 60000 * 10)
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 
+app.use((req, res, next) => {
+  res.set({
+    'Access-Control-Allow-Credentials': true,
+    'Access-Control-Allow-Origin': req.headers.origin,
+    'Access-Control-Allow-Headers': 'X-Requested-With,Content-Type',
+    'Access-Control-Allow-Methods': 'PUT,POST,GET,DELETE,OPTIONS',
+    'Content-Type': 'application/json; charset=utf-8',
+  })
+  req.method === 'OPTIONS' ? res.status(204).end() : next()
+})
+
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({extended: false}));
@@ -34,9 +45,6 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 config.useDataStatistics && app.use((req, res, next) => dataHandle.record(req, res, next));
 
-const corsMap = {
-  '/user/setCookie': true,
-}
 fs.readdirSync(path.join(__dirname, 'routes')).forEach(file => {
   const filename = file.replace(/\.js$/, '');
   const RouterMap = require(`./routes/${filename}`);
@@ -61,15 +69,6 @@ fs.readdirSync(path.join(__dirname, 'routes')).forEach(file => {
       const args = {request, dataStatistics: dataHandle, feedback, cache, globalCookie};
       router.post('/', (req, res) => func({req, res, ...args}));
       router.get('/', (req, res) => func({req, res, ...args}));
-      if (corsMap[`/${filename}${path}`]) {
-        router.options('/', (req, res) => {
-          res.set('Access-Control-Allow-Origin', 'https://y.qq.com');
-          res.set('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
-          res.set('Access-Control-Allow-Headers', 'Content-Type');
-          res.set('Access-Control-Allow-Credentials', 'true');
-          res.sendStatus(200);
-        })
-      }
       router(req, res, next);
     })
   });
