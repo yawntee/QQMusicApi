@@ -30,7 +30,7 @@ module.exports = {
       }
     });
 
-    result.lyric = Base64.Base64.decode(result.lyric);
+    result.lyric = Base64.Base64.decode(result.lyric || '');
     result.trans = Base64.Base64.decode(result.trans || '');
     if (Number(raw)) {
       res.send(result);
