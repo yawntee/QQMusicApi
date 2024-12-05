@@ -1,10 +1,11 @@
+const cheerio = require('cheerio');
+const vm = require('vm')
 const search = require('./search');
 const getSign = require('../util/sign');
 
 const song = {
   '/': async ({req, res, request}) => {
-    const url = 'http://u.y.qq.com/cgi-bin/musicu.fcg';
-    const {songmid, raw} = req.query;
+    const {songmid, raw, cookie} = req.query;
 
     if (!songmid) {
       return res.send({
@@ -12,30 +13,31 @@ const song = {
         errMsg: 'songmid 不能为空',
       });
     }
-    const data = {
-      data: JSON.stringify({
-        songinfo: {
-          method: 'get_song_detail_yqq',
-          module: 'music.pf_song_detail_svr',
-          param: {
-            song_mid: songmid,
-          },
-        },
-      }),
-    };
 
-    const result = await request({url, data});
+    const page = await request('https://y.qq.com/n/ryqq/songDetail/'+ songmid, {
+      dataType: 'raw',
+    })
 
-    if (Number(raw)) {
-      return res.send(result);
+    const $ = cheerio.load(page);
+
+    const scripts = $('body > script');
+
+    if(scripts.length < 4) {
+      return res.send({
+        result: 500,
+        errMsg: '登录失效，请重新登录',
+      })
     }
+
+    const _window = {}
+
+    vm.runInNewContext(scripts.first().text(), {window: _window});
 
     res &&
     res.send({
       result: 100,
-      data: result.songinfo.data,
+      data: _window.__INITIAL_DATA__.songList[0],
     });
-    return result.songinfo.data;
   },
 
   '/url': async ({req, res, request, cache, globalCookie}) => {

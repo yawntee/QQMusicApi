@@ -18,6 +18,7 @@ const feedback = new Feedback();
 const cache = new Cache();
 const globalCookie = GlobalCookie();
 
+process.on('uncaughtException', console.error.bind(console))
 
 // 每10分钟存一下数据
 config.useDataStatistics && setInterval(() => dataHandle.saveInfo(), 60000 * 10);
