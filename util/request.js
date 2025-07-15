@@ -45,7 +45,7 @@ module.exports = (req, res, {globalCookie} = {}) => {
       obj.headers = obj.headers || {};
       obj.xsrfCookieName = 'XSRF-TOKEN';
       obj.withCredentials = true;
-      obj.headers.Cookie = req.query.cookie;
+      obj.headers.Cookie = req.query.cookie || userCookie;
       obj.headers['User-Agent'] ??= 'Mozilla/5.0 (Windows; Windows NT 10.2; x64; en-US) AppleWebKit/534.30 (KHTML, like Gecko) Chrome/47.0.1158.277 Safari/601'
 
       const response = await axios(obj);
