@@ -12,7 +12,13 @@ const blackFunc = new Set([
 
 class QQMusic {
   get cookie() {
-    return this._cookie || {};
+    let str = '';
+    for (let key in this._cookie) {
+        if (this._cookie[key]) {
+            str += `${key}=${this._cookie[key]}; `;
+        }
+    }
+    return str || {};
   }
 
   get uin() {
@@ -66,15 +72,17 @@ class QQMusic {
         return reject({message: 'wrong path'});
       }
 
+      const globalCookie = {
+        userCookie: () => this.cookie,
+      }
+
       try {
         routes[baseFunc][`/${func}`]({
           req,
           res,
-          request: Request(req, res),
+          request: Request(req, res, {globalCookie}),
           cache,
-          globalCookie: {
-            userCookie: () => this.cookie,
-          }
+          globalCookie
         })
       } catch (err) {
         reject(err);
