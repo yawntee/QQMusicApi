@@ -1,3 +1,4 @@
+const axios = require('axios');
 const cheerio = require('cheerio');
 const vm = require('vm')
 const search = require('./search');
@@ -14,20 +15,22 @@ const song = {
       });
     }
 
-    const page = await request('https://y.qq.com/n/ryqq/songDetail/'+ songmid, {
-      dataType: 'raw',
+    let key = 'songmid'
+
+    if (/^\d+$/.test(songmid)) {
+      key = 'songid'
+    }
+
+    const page = await axios.get('https://i.y.qq.com/v8/playsong.html',{
+      params:{
+        [key]: songmid,
+        songtype: '0',
+      },
     })
 
-    const $ = cheerio.load(page);
+    const $ = cheerio.load(page.data);
 
     const scripts = $('body > script');
-
-    if(scripts.length < 4) {
-      return res.send({
-        result: 500,
-        errMsg: '登录失效，请重新登录',
-      })
-    }
 
     const _window = {}
 
@@ -36,7 +39,7 @@ const song = {
     res &&
     res.send({
       result: 100,
-      data: _window.__INITIAL_DATA__.songList[0],
+      data: _window.__ssrFirstPageData__.songList[0],
     });
   },
 
